@@ -5,8 +5,9 @@ import com.robindrew.common.service.component.heartbeat.HeartbeatComponent;
 import com.robindrew.common.service.component.logging.LoggingComponent;
 import com.robindrew.common.service.component.properties.PropertiesComponent;
 import com.robindrew.common.service.component.stats.StatsComponent;
-import com.robindrew.trading.multifeed.igindex.IgIndexComponent;
 import com.robindrew.trading.multifeed.jetty.JettyComponent;
+import com.robindrew.trading.multifeed.provider.igindex.IgIndexComponent;
+import com.robindrew.trading.multifeed.provider.oanda.OandaComponent;
 
 public class MultiFeedService extends AbstractService {
 
@@ -23,7 +24,9 @@ public class MultiFeedService extends AbstractService {
 	private final PropertiesComponent properties = new PropertiesComponent();
 	private final LoggingComponent logging = new LoggingComponent();
 	private final StatsComponent stats = new StatsComponent();
+
 	private final IgIndexComponent igindex = new IgIndexComponent();
+	private final OandaComponent oanda = new OandaComponent();
 
 	public MultiFeedService(String[] args) {
 		super(args);
@@ -36,6 +39,7 @@ public class MultiFeedService extends AbstractService {
 		start(heartbeat);
 		start(stats);
 		start(jetty);
+		start(oanda);
 		start(igindex);
 	}
 

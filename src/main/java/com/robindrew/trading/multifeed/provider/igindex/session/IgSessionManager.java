@@ -1,12 +1,12 @@
-package com.robindrew.trading.multifeed.igindex.session;
+package com.robindrew.trading.multifeed.provider.igindex.session;
 
 import com.robindrew.trading.igindex.platform.IgSession;
 
-public class SessionManager implements SessionManagerMBean {
+public class IgSessionManager implements IgSessionManagerMBean {
 
 	private final IgSession session;
 
-	public SessionManager(IgSession session) {
+	public IgSessionManager(IgSession session) {
 		this.session = session;
 	}
 

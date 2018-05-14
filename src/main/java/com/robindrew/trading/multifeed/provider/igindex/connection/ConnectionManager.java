@@ -1,4 +1,4 @@
-package com.robindrew.trading.multifeed.igindex.connection;
+package com.robindrew.trading.multifeed.provider.igindex.connection;
 
 import static com.robindrew.common.dependency.DependencyFactory.clearDependency;
 

@@ -1,4 +1,4 @@
-package com.robindrew.trading.multifeed.igindex.connection;
+package com.robindrew.trading.multifeed.provider.igindex.connection;
 
 import java.util.List;
 

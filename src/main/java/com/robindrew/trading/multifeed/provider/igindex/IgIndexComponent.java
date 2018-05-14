@@ -1,4 +1,4 @@
-package com.robindrew.trading.multifeed.igindex;
+package com.robindrew.trading.multifeed.provider.igindex;
 
 import static com.robindrew.common.dependency.DependencyFactory.getDependency;
 import static com.robindrew.common.dependency.DependencyFactory.setDependency;
@@ -27,14 +27,13 @@ import com.robindrew.trading.igindex.platform.rest.IgRestService;
 import com.robindrew.trading.igindex.platform.rest.executor.getmarketnavigation.cache.IMarketNavigationCache;
 import com.robindrew.trading.igindex.platform.streaming.IgStreamingServiceMonitor;
 import com.robindrew.trading.log.TransactionLog;
-import com.robindrew.trading.multifeed.igindex.connection.ConnectionManager;
-import com.robindrew.trading.multifeed.igindex.connection.IConnectionManager;
-import com.robindrew.trading.multifeed.igindex.session.SessionManager;
+import com.robindrew.trading.multifeed.provider.igindex.connection.ConnectionManager;
+import com.robindrew.trading.multifeed.provider.igindex.connection.IConnectionManager;
+import com.robindrew.trading.multifeed.provider.igindex.session.IgSessionManager;
 import com.robindrew.trading.platform.ITradingPlatform;
 import com.robindrew.trading.platform.streaming.IInstrumentPriceStream;
 import com.robindrew.trading.platform.streaming.IStreamingService;
 import com.robindrew.trading.price.candle.io.stream.sink.PriceCandleFileSink;
-import com.robindrew.trading.price.precision.PricePrecision;
 
 public class IgIndexComponent extends AbstractIdleComponent {
 
@@ -44,8 +43,8 @@ public class IgIndexComponent extends AbstractIdleComponent {
 	private static final IProperty<String> propertyUsername = new StringProperty("igindex.username");
 	private static final IProperty<String> propertyPassword = new StringProperty("igindex.password");
 	private static final IProperty<IgEnvironment> propertyEnvironment = new EnumProperty<>(IgEnvironment.class, "igindex.environment");
-	private static final IProperty<String> propertyTickOutputDir = new StringProperty("tick.output.dir");
-	private static final IProperty<File> propertyTransactionLogDir = new FileProperty("transaction.log.dir");
+	private static final IProperty<String> propertyTickOutputDir = new StringProperty("igindex.tick.output.dir");
+	private static final IProperty<File> propertyTransactionLogDir = new FileProperty("igindex.transaction.log.dir");
 
 	private volatile IgStreamingServiceMonitor monitor;
 
@@ -68,7 +67,7 @@ public class IgIndexComponent extends AbstractIdleComponent {
 		setDependency(IIgSession.class, session);
 
 		log.info("Creating Account Manager");
-		SessionManager sessionManager = new SessionManager(session);
+		IgSessionManager sessionManager = new IgSessionManager(session);
 		registry.register(sessionManager);
 
 		log.info("Creating Transaction Log");
@@ -105,36 +104,29 @@ public class IgIndexComponent extends AbstractIdleComponent {
 	}
 
 	private void createStreamingSubscriptions() {
-		// createStreamingSubscription(IgInstrument.SUNDAY_DOW_JONES, new PricePrecision(2));
-		// createStreamingSubscription(IgInstrument.SUNDAY_FTSE_100, new PricePrecision(2));
-		// createStreamingSubscription(IgInstrument.SUNDAY_DAX, new PricePrecision(2));
-		// createStreamingSubscription(IgInstrument.SPOT_BITCOIN, new PricePrecision(2));
-		// createStreamingSubscription(IgInstrument.SPOT_ETHER, new PricePrecision(2));
-		// createStreamingSubscription(IgInstrument.SPOT_RIPPLE, new PricePrecision(2));
-		// createStreamingSubscription(IgInstrument.SPOT_LITECOIN, new PricePrecision(2));
 
 		// Currencies
-		createStreamingSubscription(IgInstrument.SPOT_AUD_USD, new PricePrecision(2));
-		createStreamingSubscription(IgInstrument.SPOT_EUR_JPY, new PricePrecision(2));
-		createStreamingSubscription(IgInstrument.SPOT_EUR_USD, new PricePrecision(2));
-		createStreamingSubscription(IgInstrument.SPOT_GBP_USD, new PricePrecision(2));
-		createStreamingSubscription(IgInstrument.SPOT_USD_CHF, new PricePrecision(2));
-		createStreamingSubscription(IgInstrument.SPOT_USD_JPY, new PricePrecision(2));
+		createStreamingSubscription(IgInstrument.SPOT_AUD_USD);
+		createStreamingSubscription(IgInstrument.SPOT_EUR_JPY);
+		createStreamingSubscription(IgInstrument.SPOT_EUR_USD);
+		createStreamingSubscription(IgInstrument.SPOT_GBP_USD);
+		createStreamingSubscription(IgInstrument.SPOT_USD_CHF);
+		createStreamingSubscription(IgInstrument.SPOT_USD_JPY);
 
 		// Indices
-		createStreamingSubscription(IgInstrument.WEEKDAY_FTSE_100, new PricePrecision(2));
-		createStreamingSubscription(IgInstrument.WEEKDAY_DOW_JONES, new PricePrecision(2));
+		createStreamingSubscription(IgInstrument.WEEKDAY_FTSE_100);
+		createStreamingSubscription(IgInstrument.WEEKDAY_DOW_JONES);
 
 		// Commodities
-		createStreamingSubscription(IgInstrument.SPOT_SILVER, new PricePrecision(2));
-		createStreamingSubscription(IgInstrument.SPOT_GOLD, new PricePrecision(2));
-		createStreamingSubscription(IgInstrument.SPOT_US_CRUDE, new PricePrecision(2));
-		createStreamingSubscription(IgInstrument.SPOT_BRENT_CRUDE, new PricePrecision(2));
+		createStreamingSubscription(IgInstrument.SPOT_SILVER);
+		createStreamingSubscription(IgInstrument.SPOT_GOLD);
+		createStreamingSubscription(IgInstrument.SPOT_US_CRUDE);
+		createStreamingSubscription(IgInstrument.SPOT_BRENT_CRUDE);
 
 	}
 
 	@SuppressWarnings("unchecked")
-	private void createStreamingSubscription(IIgInstrument instrument, PricePrecision precision) {
+	private void createStreamingSubscription(IIgInstrument instrument) {
 		ITradingPlatform<IIgInstrument> platform = getDependency(ITradingPlatform.class);
 
 		// Register the stream to make it available through the platform
