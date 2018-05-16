@@ -2,6 +2,18 @@ package com.robindrew.trading.multifeed.provider.oanda;
 
 import static com.robindrew.common.dependency.DependencyFactory.getDependency;
 import static com.robindrew.common.dependency.DependencyFactory.setDependency;
+import static com.robindrew.trading.Instruments.AUD_USD;
+import static com.robindrew.trading.Instruments.BRENT_CRUDE_OIL;
+import static com.robindrew.trading.Instruments.DOW_JONES_30;
+import static com.robindrew.trading.Instruments.EUR_JPY;
+import static com.robindrew.trading.Instruments.EUR_USD;
+import static com.robindrew.trading.Instruments.FTSE_100;
+import static com.robindrew.trading.Instruments.GBP_USD;
+import static com.robindrew.trading.Instruments.USD_CHF;
+import static com.robindrew.trading.Instruments.USD_JPY;
+import static com.robindrew.trading.Instruments.US_CRUDE_OIL;
+import static com.robindrew.trading.Instruments.XAG_USD;
+import static com.robindrew.trading.Instruments.XAU_USD;
 
 import java.io.File;
 
@@ -15,11 +27,11 @@ import com.robindrew.common.properties.map.type.FileProperty;
 import com.robindrew.common.properties.map.type.IProperty;
 import com.robindrew.common.properties.map.type.StringProperty;
 import com.robindrew.common.service.component.AbstractIdleComponent;
-import com.robindrew.trading.igindex.IIgInstrument;
-import com.robindrew.trading.igindex.IgInstrument;
+import com.robindrew.trading.IInstrumentRegistry;
 import com.robindrew.trading.igindex.platform.streaming.IgStreamingServiceMonitor;
 import com.robindrew.trading.log.TransactionLog;
 import com.robindrew.trading.multifeed.provider.oanda.session.OandaSessionManager;
+import com.robindrew.trading.oanda.IOandaInstrument;
 import com.robindrew.trading.oanda.platform.IOandaSession;
 import com.robindrew.trading.oanda.platform.OandaCredentials;
 import com.robindrew.trading.oanda.platform.OandaEnvironment;
@@ -80,35 +92,36 @@ public class OandaComponent extends AbstractIdleComponent {
 	}
 
 	private void createStreamingSubscriptions() {
+		IInstrumentRegistry registry = getDependency(IInstrumentRegistry.class);
 
 		// Currencies
-		createStreamingSubscription(IgInstrument.SPOT_AUD_USD);
-		createStreamingSubscription(IgInstrument.SPOT_EUR_JPY);
-		createStreamingSubscription(IgInstrument.SPOT_EUR_USD);
-		createStreamingSubscription(IgInstrument.SPOT_GBP_USD);
-		createStreamingSubscription(IgInstrument.SPOT_USD_CHF);
-		createStreamingSubscription(IgInstrument.SPOT_USD_JPY);
+		createStreamingSubscription(registry.get(AUD_USD, IOandaInstrument.class));
+		createStreamingSubscription(registry.get(EUR_JPY, IOandaInstrument.class));
+		createStreamingSubscription(registry.get(EUR_USD, IOandaInstrument.class));
+		createStreamingSubscription(registry.get(GBP_USD, IOandaInstrument.class));
+		createStreamingSubscription(registry.get(USD_CHF, IOandaInstrument.class));
+		createStreamingSubscription(registry.get(USD_JPY, IOandaInstrument.class));
 
 		// Indices
-		createStreamingSubscription(IgInstrument.WEEKDAY_FTSE_100);
-		createStreamingSubscription(IgInstrument.WEEKDAY_DOW_JONES);
+		createStreamingSubscription(registry.get(FTSE_100, IOandaInstrument.class));
+		createStreamingSubscription(registry.get(DOW_JONES_30, IOandaInstrument.class));
 
 		// Commodities
-		createStreamingSubscription(IgInstrument.SPOT_SILVER);
-		createStreamingSubscription(IgInstrument.SPOT_GOLD);
-		createStreamingSubscription(IgInstrument.SPOT_US_CRUDE);
-		createStreamingSubscription(IgInstrument.SPOT_BRENT_CRUDE);
+		createStreamingSubscription(registry.get(XAU_USD, IOandaInstrument.class));
+		createStreamingSubscription(registry.get(XAG_USD, IOandaInstrument.class));
+		createStreamingSubscription(registry.get(US_CRUDE_OIL, IOandaInstrument.class));
+		createStreamingSubscription(registry.get(BRENT_CRUDE_OIL, IOandaInstrument.class));
 
 	}
 
 	@SuppressWarnings("unchecked")
-	private void createStreamingSubscription(IIgInstrument instrument) {
-		ITradingPlatform<IIgInstrument> platform = getDependency(ITradingPlatform.class);
+	private void createStreamingSubscription(IOandaInstrument instrument) {
+		ITradingPlatform<IOandaInstrument> platform = getDependency(ITradingPlatform.class);
 
 		// Register the stream to make it available through the platform
-		IStreamingService<IIgInstrument> streaming = platform.getStreamingService();
+		IStreamingService<IOandaInstrument> streaming = platform.getStreamingService();
 		streaming.subscribe(instrument);
-		IInstrumentPriceStream<IIgInstrument> priceStream = streaming.getPriceStream(instrument);
+		IInstrumentPriceStream<IOandaInstrument> priceStream = streaming.getPriceStream(instrument);
 
 		// Create the output file
 		PriceCandleFileSink priceFileSink = new PriceCandleFileSink(instrument, new File(propertyTickOutputDir.get()));
