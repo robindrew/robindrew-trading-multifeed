@@ -85,36 +85,40 @@ body { padding-top: 10px; }
 $(document).ready(function () {
 	setInterval(function () {
 		$.getJSON( "/Prices", function(data) {
-			$.each(data, function(index, jsonText) {
-				var jsonObject = JSON.parse(jsonText);
-				
-				for (instrument in jsonObject) {
-					console.log("key="+instrument);
-				}
-				
-// 				$("#" + price.id + "_ClosePrice").text(price.close);
+			$.each(data, function(index, json) {
+				for (i in json) {
+					var instrument = json[i].name;
+					var type = json[i].type;
+					
+					for (j in json[i].prices) {
+						var price = json[i].prices[j];
 
-// 				var color = $("#" + price.id + "_CloseColor");
-// 				var icon = $("#" + price.id + "_CloseIcon");
-// 				if (price.direction == "BUY") {
-// 					color.removeClass("danger").removeClass("warning").addClass("info");
-// 					icon.removeClass("glyphicon-minus").removeClass("glyphicon-arrow-down").addClass("glyphicon-arrow-up");
-// 				}
-// 				if (price.direction == "SELL") {
-// 					color.removeClass("info").removeClass("warning").addClass("danger");
-// 					icon.removeClass("glyphicon-minus").removeClass("glyphicon-arrow-up").addClass("glyphicon-arrow-down");
-// 				}
-// 				if (price.direction == "STALE") {
-// 					color.removeClass("danger").removeClass("info").removeClass("warning");
-// 					icon.removeClass("glyphicon-arrow-down").removeClass("glyphicon-arrow-up").addClass("glyphicon-minus");
-// 				}
+		 				$("#" + price.id + "_ClosePrice").text(price.close);
+		 				
+						var color = $("#" + price.id + "_CloseColor");
+ 						var icon = $("#" + price.id + "_CloseIcon");
+		 				if (price.direction == "BUY") {
+		 					color.removeClass("danger").removeClass("warning").addClass("info");
+		 					icon.removeClass("glyphicon-minus").removeClass("glyphicon-arrow-down").addClass("glyphicon-arrow-up");
+		 				}
+		 				if (price.direction == "SELL") {
+		 					color.removeClass("info").removeClass("warning").addClass("danger");
+		 					icon.removeClass("glyphicon-minus").removeClass("glyphicon-arrow-up").addClass("glyphicon-arrow-down");
+		 				}
+		 				if (price.direction == "STALE") {
+		 					color.removeClass("danger").removeClass("info").removeClass("warning");
+		 					icon.removeClass("glyphicon-arrow-down").removeClass("glyphicon-arrow-up").addClass("glyphicon-minus");
+		 				}
+		 				
+					}
+				}
 			});
 		}).error(function() {
 			console.log("ERROR");
-			//$(".CloseColor").removeClass("danger").removeClass("info").addClass("warning");
-			//$(".CloseIcon").removeClass("glyphicon-arrow-down").removeClass("glyphicon-arrow-up").addClass("glyphicon-minus");
+			$(".CloseColor").removeClass("danger").removeClass("info").addClass("warning");
+			$(".CloseIcon").removeClass("glyphicon-arrow-down").removeClass("glyphicon-arrow-up").addClass("glyphicon-minus");
 		});
-	}, 5000);
+	}, 500);
 });
 
 </script>
