@@ -7,16 +7,21 @@ import java.util.concurrent.TimeUnit;
 
 import com.robindrew.common.html.Bootstrap;
 import com.robindrew.common.text.Strings;
-import com.robindrew.trading.igindex.IIgInstrument;
+import com.robindrew.trading.IInstrument;
 import com.robindrew.trading.platform.streaming.IInstrumentPriceStream;
 import com.robindrew.trading.price.candle.IPriceCandle;
 import com.robindrew.trading.price.candle.streaming.IPriceCandleSnapshot;
 import com.robindrew.trading.price.candle.streaming.IStreamingCandlePrice;
 import com.robindrew.trading.price.decimal.Decimals;
+import com.robindrew.trading.provider.ITradingProvider;
 
-public class FeedPriceView implements Comparable<FeedPriceView> {
+public class PriceJson {
 
 	private static final int STALE_THRESHOLD = 10000;
+
+	public static final String toId(IInstrument instrument) {
+		return toId(instrument.getUnderlying(true).getName());
+	}
 
 	public static final String toId(String instrument) {
 		StringBuilder id = new StringBuilder();
@@ -29,7 +34,7 @@ public class FeedPriceView implements Comparable<FeedPriceView> {
 	}
 
 	private final String id;
-	private final String instrument;
+	private final String provider;
 	private final String close;
 	private final String direction;
 	private final String lastUpdated;
@@ -37,13 +42,13 @@ public class FeedPriceView implements Comparable<FeedPriceView> {
 	private final String directionColor;
 	private final String tickVolume;
 
-	public FeedPriceView(IInstrumentPriceStream<IIgInstrument> subscription) {
+	public PriceJson(ITradingProvider provider, IInstrumentPriceStream<?> subscription) {
 		IStreamingCandlePrice price = subscription.getPrice();
 		List<IPriceCandleSnapshot> history = price.getSnapshotHistory();
 		IPriceCandleSnapshot snapshot = history.isEmpty() ? null : history.get(history.size() - 1);
 
-		this.instrument = subscription.getInstrument().getName();
-		this.id = toId(this.instrument);
+		this.id = provider.name() + "_" + subscription.getInstrument().getUnderlying(true).getName();
+		this.provider = provider.name();
 
 		if (snapshot == null) {
 			this.close = "-";
@@ -82,8 +87,12 @@ public class FeedPriceView implements Comparable<FeedPriceView> {
 		return String.valueOf(count);
 	}
 
-	public String getInstrument() {
-		return instrument;
+	public String getId() {
+		return id;
+	}
+
+	public String getProvider() {
+		return provider;
 	}
 
 	public String getClose() {
@@ -98,10 +107,6 @@ public class FeedPriceView implements Comparable<FeedPriceView> {
 		return lastUpdated;
 	}
 
-	public String getId() {
-		return id;
-	}
-
 	public String getUpdateCount() {
 		return updateCount;
 	}
@@ -114,8 +119,4 @@ public class FeedPriceView implements Comparable<FeedPriceView> {
 		return tickVolume;
 	}
 
-	@Override
-	public int compareTo(FeedPriceView that) {
-		return this.getInstrument().compareTo(that.getInstrument());
-	}
 }

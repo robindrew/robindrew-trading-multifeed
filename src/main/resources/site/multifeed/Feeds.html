@@ -1,0 +1,122 @@
+<html>
+
+
+<head>
+<title>${title}</title>
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+
+<style>
+body { padding-top: 10px; }
+.top-spacer {padding-top: 10px; }]
+</style>
+
+
+</head>
+
+
+<body>
+
+<!-- START CONTAINER -->
+<div class="container">
+
+
+<!-- NAV BAR -->
+<nav class="navbar navbar-default">
+<div class="container-fluid">
+<div class="navbar-header">
+<a class="navbar-brand" href="/">${serviceName} #${serviceInstance}</a>
+</div>
+<ul class="nav navbar-nav">
+<li class="active"><a href="/Feeds"><span class="glyphicon glyphicon-cloud-download"></span> Feeds</a></li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<li><a href="#">${environment}</a></li>
+</ul>
+</div><!-- /.container-fluid -->
+</nav>
+<!-- NAV BAR -->
+
+
+<!-- START ROW -->
+<div class="row">
+
+<!-- TITLE -->
+<div class="col-md-12">
+<h3><span class="glyphicon glyphicon-cloud-download"></span> Feeds</h3>
+</div>
+
+<div class="col-md-12">
+<div class="panel panel-default">
+<table class="table small table-hover table-striped table-bordered">
+<tr class="active">
+<th>Type</th>
+<th>Name</th>
+#foreach($provider in $providers)
+<th>$provider</th>
+#end
+</tr>
+#foreach($instrument in $instruments)
+<tr>
+<td>${instrument.type}</td>
+<td>${instrument.name}</td>
+#foreach($price in $instrument.prices)
+<td id="${price.id}_CloseColor" class="warning CloseColor"><span id="${price.id}_CloseIcon" class="glyphicon glyphicon-minus CloseIcon" aria-hidden="true"></span>&nbsp;&nbsp;<span id="${price.id}_ClosePrice">-</span></td>
+#end
+</tr>
+#end
+</table>
+</div>
+</div>
+
+<!-- END ROW -->
+</div>
+
+<!-- END CONTAINER -->
+</div>
+
+
+<!-- JavaScript -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js" ></script>
+<script>
+$(document).ready(function () {
+	setInterval(function () {
+		$.getJSON( "/Prices", function(data) {
+			$.each(data, function(index, jsonText) {
+				var jsonObject = JSON.parse(jsonText);
+				
+				for (instrument in jsonObject) {
+					console.log("key="+instrument);
+				}
+				
+// 				$("#" + price.id + "_ClosePrice").text(price.close);
+
+// 				var color = $("#" + price.id + "_CloseColor");
+// 				var icon = $("#" + price.id + "_CloseIcon");
+// 				if (price.direction == "BUY") {
+// 					color.removeClass("danger").removeClass("warning").addClass("info");
+// 					icon.removeClass("glyphicon-minus").removeClass("glyphicon-arrow-down").addClass("glyphicon-arrow-up");
+// 				}
+// 				if (price.direction == "SELL") {
+// 					color.removeClass("info").removeClass("warning").addClass("danger");
+// 					icon.removeClass("glyphicon-minus").removeClass("glyphicon-arrow-up").addClass("glyphicon-arrow-down");
+// 				}
+// 				if (price.direction == "STALE") {
+// 					color.removeClass("danger").removeClass("info").removeClass("warning");
+// 					icon.removeClass("glyphicon-arrow-down").removeClass("glyphicon-arrow-up").addClass("glyphicon-minus");
+// 				}
+			});
+		}).error(function() {
+			console.log("ERROR");
+			//$(".CloseColor").removeClass("danger").removeClass("info").addClass("warning");
+			//$(".CloseIcon").removeClass("glyphicon-arrow-down").removeClass("glyphicon-arrow-up").addClass("glyphicon-minus");
+		});
+	}, 5000);
+});
+
+</script>
+</body>
+</html>

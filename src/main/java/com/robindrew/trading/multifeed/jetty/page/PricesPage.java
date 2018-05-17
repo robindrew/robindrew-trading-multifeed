@@ -2,10 +2,9 @@ package com.robindrew.trading.multifeed.jetty.page;
 
 import static com.robindrew.common.dependency.DependencyFactory.getDependency;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -13,11 +12,9 @@ import com.robindrew.common.http.servlet.executor.IVelocityHttpContext;
 import com.robindrew.common.http.servlet.request.IHttpRequest;
 import com.robindrew.common.http.servlet.response.IHttpResponse;
 import com.robindrew.common.service.component.jetty.handler.page.AbstractServicePage;
-import com.robindrew.trading.igindex.IIgInstrument;
-import com.robindrew.trading.multifeed.jetty.page.view.FeedPriceView;
-import com.robindrew.trading.platform.ITradingPlatform;
-import com.robindrew.trading.platform.streaming.IInstrumentPriceStream;
-import com.robindrew.trading.platform.streaming.IStreamingService;
+import com.robindrew.trading.multifeed.jetty.page.view.InstrumentJson;
+import com.robindrew.trading.multifeed.subscriber.ISubscriberManager;
+import com.robindrew.trading.multifeed.subscriber.ISubscriberMap;
 
 public class PricesPage extends AbstractServicePage {
 
@@ -29,21 +26,22 @@ public class PricesPage extends AbstractServicePage {
 	protected void execute(IHttpRequest request, IHttpResponse response, Map<String, Object> dataMap) {
 		super.execute(request, response, dataMap);
 
-		ITradingPlatform<IIgInstrument> platform = getDependency(ITradingPlatform.class);
-		IStreamingService<IIgInstrument> service = platform.getStreamingService();
-		dataMap.put("prices", getPrices(service.getPriceStreams()));
+		ISubscriberManager manager = getDependency(ISubscriberManager.class);
+		dataMap.put("instruments", getInstrumentsJson(manager));
 	}
 
-	private String getPrices(Set<IInstrumentPriceStream<IIgInstrument>> subscriptions) {
-		List<FeedPriceView> prices = new ArrayList<>();
-		for (IInstrumentPriceStream<IIgInstrument> subscription : subscriptions) {
-			prices.add(new FeedPriceView(subscription));
+	private String getInstrumentsJson(ISubscriberManager manager) {
+		Set<InstrumentJson> views = new TreeSet<>();
+		for (ISubscriberMap map : manager.getSubscriberMaps()) {
+			views.add(new InstrumentJson(map));
 		}
 
+		// Convert to JSON for AJAX
 		GsonBuilder builder = new GsonBuilder();
 		builder.setPrettyPrinting();
 		Gson gson = builder.create();
-		String json = gson.toJson(prices);
+		String json = gson.toJson(views);
+		System.out.println(json);
 		return json;
 	}
 
