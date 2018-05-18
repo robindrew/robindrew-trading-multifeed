@@ -14,6 +14,7 @@ import static com.robindrew.trading.Instruments.USD_JPY;
 import static com.robindrew.trading.Instruments.US_CRUDE_OIL;
 import static com.robindrew.trading.Instruments.XAG_USD;
 import static com.robindrew.trading.Instruments.XAU_USD;
+import static com.robindrew.trading.provider.TradingProvider.FXCM;
 import static com.robindrew.trading.provider.TradingProvider.IGINDEX;
 import static com.robindrew.trading.provider.TradingProvider.OANDA;
 
@@ -29,6 +30,8 @@ import com.robindrew.trading.IInstrument;
 import com.robindrew.trading.IInstrumentRegistry;
 import com.robindrew.trading.InstrumentRegistry;
 import com.robindrew.trading.fxcm.FxcmInstrument;
+import com.robindrew.trading.fxcm.IFxcmInstrument;
+import com.robindrew.trading.fxcm.platform.IFxcmTradingPlatform;
 import com.robindrew.trading.igindex.IIgInstrument;
 import com.robindrew.trading.igindex.IgInstrument;
 import com.robindrew.trading.igindex.platform.IIgTradingPlatform;
@@ -43,6 +46,7 @@ public class SubscriberComponent extends AbstractIdleComponent {
 
 	private static final Logger log = LoggerFactory.getLogger(SubscriberComponent.class);
 
+	private static final IProperty<String> propertyFxcmTickOutputDir = new StringProperty("fxcm.tick.output.dir");
 	private static final IProperty<String> propertyOandaTickOutputDir = new StringProperty("oanda.tick.output.dir");
 	private static final IProperty<String> propertyIgIndexTickOutputDir = new StringProperty("igindex.tick.output.dir");
 
@@ -80,6 +84,7 @@ public class SubscriberComponent extends AbstractIdleComponent {
 		manager.register(BRENT_CRUDE_OIL);
 
 		// Initialise subscriptions
+		createFxcmSubscriptions(manager);
 		createOandaSubscriptions(manager);
 		createIgSubscriptions(manager);
 	}
@@ -91,16 +96,54 @@ public class SubscriberComponent extends AbstractIdleComponent {
 
 	private void createOandaSubscriptions(SubscriberManager manager) {
 		for (IInstrument instrument : manager.getInstruments()) {
-			IInstrumentPriceStream<IOandaInstrument> stream = createOandaSubscription(instrument);
-			manager.getSubscriberMap(instrument).register(OANDA, stream);
+			try {
+				IInstrumentPriceStream<IOandaInstrument> stream = createOandaSubscription(instrument);
+				manager.getSubscriberMap(instrument).register(OANDA, stream);
+			} catch (Exception e) {
+				log.warn("Unable to subscribe instrument: " + instrument, e);
+			}
 		}
 	}
 
 	private void createIgSubscriptions(SubscriberManager manager) {
 		for (IInstrument instrument : manager.getInstruments()) {
-			IInstrumentPriceStream<IIgInstrument> stream = createIgSubscription(instrument);
-			manager.getSubscriberMap(instrument).register(IGINDEX, stream);
+			try {
+				IInstrumentPriceStream<IIgInstrument> stream = createIgSubscription(instrument);
+				manager.getSubscriberMap(instrument).register(IGINDEX, stream);
+			} catch (Exception e) {
+				log.warn("Unable to subscribe instrument: " + instrument, e);
+			}
 		}
+	}
+
+	private void createFxcmSubscriptions(SubscriberManager manager) {
+		for (IInstrument instrument : manager.getInstruments()) {
+			try {
+				IInstrumentPriceStream<IFxcmInstrument> stream = createFxcmSubscription(instrument);
+				manager.getSubscriberMap(instrument).register(FXCM, stream);
+			} catch (Exception e) {
+				log.warn("Unable to subscribe instrument: " + instrument, e);
+			}
+		}
+	}
+
+	private IInstrumentPriceStream<IFxcmInstrument> createFxcmSubscription(IInstrument genericInstrument) {
+		IInstrumentRegistry registry = getDependency(IInstrumentRegistry.class);
+		IFxcmInstrument instrument = registry.get(genericInstrument, IFxcmInstrument.class);
+
+		IFxcmTradingPlatform platform = getDependency(IFxcmTradingPlatform.class);
+
+		// Register the stream to make it available through the platform
+		IStreamingService<IFxcmInstrument> streaming = platform.getStreamingService();
+		streaming.subscribe(instrument);
+		IInstrumentPriceStream<IFxcmInstrument> priceStream = streaming.getPriceStream(instrument);
+
+		// Create the output file
+		PriceCandleFileSink priceFileSink = new PriceCandleFileSink(instrument, new File(propertyFxcmTickOutputDir.get()));
+		priceFileSink.start();
+		priceStream.register(priceFileSink);
+
+		return priceStream;
 	}
 
 	private IInstrumentPriceStream<IOandaInstrument> createOandaSubscription(IInstrument genericInstrument) {

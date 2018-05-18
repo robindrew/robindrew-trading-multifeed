@@ -21,6 +21,8 @@ import com.robindrew.trading.fxcm.platform.FxcmTradingPlatform;
 import com.robindrew.trading.fxcm.platform.IFxcmSession;
 import com.robindrew.trading.fxcm.platform.IFxcmTradingPlatform;
 import com.robindrew.trading.fxcm.platform.api.java.FxcmJavaService;
+import com.robindrew.trading.fxcm.platform.api.java.gateway.FxcmGateway;
+import com.robindrew.trading.fxcm.platform.api.java.streaming.IFxcmStreamingService;
 import com.robindrew.trading.igindex.platform.streaming.IgStreamingServiceMonitor;
 import com.robindrew.trading.log.TransactionLog;
 import com.robindrew.trading.multifeed.provider.fxcm.session.FxcmSessionManager;
@@ -61,10 +63,18 @@ public class FxcmComponent extends AbstractIdleComponent {
 		TransactionLog transactionLog = new TransactionLog(transactionLogDir);
 		transactionLog.start();
 
+		log.info("Creating Gateway");
+		FxcmGateway gateway = new FxcmGateway(transactionLog);
+		FxcmJavaService service = new FxcmJavaService(session, gateway, transactionLog);
+		service.login();
+
 		log.info("Creating Trading Platform");
-		FxcmJavaService java = new FxcmJavaService(session, transactionLog);
-		FxcmTradingPlatform platform = new FxcmTradingPlatform(java);
+		FxcmTradingPlatform platform = new FxcmTradingPlatform(service);
 		setDependency(IFxcmTradingPlatform.class, platform);
+
+		log.info("Register Streaming Service");
+		IFxcmStreamingService streaming = platform.getStreamingService();
+		gateway.setTickHandler(streaming);
 	}
 
 	public IgStreamingServiceMonitor getMonitor() {
