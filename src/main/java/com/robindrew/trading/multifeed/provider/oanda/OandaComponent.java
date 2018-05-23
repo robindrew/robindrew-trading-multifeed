@@ -14,7 +14,7 @@ import com.robindrew.common.properties.map.type.FileProperty;
 import com.robindrew.common.properties.map.type.IProperty;
 import com.robindrew.common.properties.map.type.StringProperty;
 import com.robindrew.common.service.component.AbstractIdleComponent;
-import com.robindrew.trading.igindex.platform.streaming.IgStreamingServiceMonitor;
+import com.robindrew.trading.igindex.platform.streaming.IgIndexStreamingServiceMonitor;
 import com.robindrew.trading.log.TransactionLog;
 import com.robindrew.trading.multifeed.provider.oanda.session.OandaSessionManager;
 import com.robindrew.trading.oanda.platform.IOandaSession;
@@ -33,7 +33,7 @@ public class OandaComponent extends AbstractIdleComponent {
 	private static final IProperty<OandaEnvironment> propertyEnvironment = new EnumProperty<>(OandaEnvironment.class, "oanda.environment");
 	private static final IProperty<File> propertyTransactionLogDir = new FileProperty("oanda.transaction.log.dir");
 
-	private volatile IgStreamingServiceMonitor monitor;
+	private volatile IgIndexStreamingServiceMonitor monitor;
 
 	@Override
 	protected void startupComponent() throws Exception {
@@ -65,7 +65,7 @@ public class OandaComponent extends AbstractIdleComponent {
 		setDependency(IOandaTradingPlatform.class, platform);
 	}
 
-	public IgStreamingServiceMonitor getMonitor() {
+	public IgIndexStreamingServiceMonitor getMonitor() {
 		return monitor;
 	}
 

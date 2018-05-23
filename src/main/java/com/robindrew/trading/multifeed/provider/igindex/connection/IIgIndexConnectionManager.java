@@ -1,6 +1,6 @@
 package com.robindrew.trading.multifeed.provider.igindex.connection;
 
-public interface IConnectionManager {
+public interface IIgIndexConnectionManager {
 
 	boolean login();
 

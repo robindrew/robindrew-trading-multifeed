@@ -14,20 +14,20 @@ import com.robindrew.common.properties.map.type.FileProperty;
 import com.robindrew.common.properties.map.type.IProperty;
 import com.robindrew.common.properties.map.type.StringProperty;
 import com.robindrew.common.service.component.AbstractIdleComponent;
-import com.robindrew.trading.igindex.platform.IIgSession;
-import com.robindrew.trading.igindex.platform.IIgTradingPlatform;
-import com.robindrew.trading.igindex.platform.IgCredentials;
-import com.robindrew.trading.igindex.platform.IgEnvironment;
-import com.robindrew.trading.igindex.platform.IgSession;
-import com.robindrew.trading.igindex.platform.IgTradingPlatform;
-import com.robindrew.trading.igindex.platform.rest.IIgRestService;
-import com.robindrew.trading.igindex.platform.rest.IgRestService;
+import com.robindrew.trading.igindex.platform.IIgIndexSession;
+import com.robindrew.trading.igindex.platform.IIgIndexTradingPlatform;
+import com.robindrew.trading.igindex.platform.IgIndexCredentials;
+import com.robindrew.trading.igindex.platform.IgIndexEnvironment;
+import com.robindrew.trading.igindex.platform.IgIndexSession;
+import com.robindrew.trading.igindex.platform.IgIndexTradingPlatform;
+import com.robindrew.trading.igindex.platform.rest.IIgIndexRestService;
+import com.robindrew.trading.igindex.platform.rest.IgIndexRestService;
 import com.robindrew.trading.igindex.platform.rest.executor.getmarketnavigation.cache.IMarketNavigationCache;
-import com.robindrew.trading.igindex.platform.streaming.IgStreamingServiceMonitor;
+import com.robindrew.trading.igindex.platform.streaming.IgIndexStreamingServiceMonitor;
 import com.robindrew.trading.log.TransactionLog;
-import com.robindrew.trading.multifeed.provider.igindex.connection.ConnectionManager;
-import com.robindrew.trading.multifeed.provider.igindex.connection.IConnectionManager;
-import com.robindrew.trading.multifeed.provider.igindex.session.IgSessionManager;
+import com.robindrew.trading.multifeed.provider.igindex.connection.IIgIndexConnectionManager;
+import com.robindrew.trading.multifeed.provider.igindex.connection.IgIndexConnectionManager;
+import com.robindrew.trading.multifeed.provider.igindex.session.IgIndexSessionManager;
 
 public class IgIndexComponent extends AbstractIdleComponent {
 
@@ -36,10 +36,10 @@ public class IgIndexComponent extends AbstractIdleComponent {
 	private static final IProperty<String> propertyApiKey = new StringProperty("igindex.api.key");
 	private static final IProperty<String> propertyUsername = new StringProperty("igindex.username");
 	private static final IProperty<String> propertyPassword = new StringProperty("igindex.password");
-	private static final IProperty<IgEnvironment> propertyEnvironment = new EnumProperty<>(IgEnvironment.class, "igindex.environment");
+	private static final IProperty<IgIndexEnvironment> propertyEnvironment = new EnumProperty<>(IgIndexEnvironment.class, "igindex.environment");
 	private static final IProperty<File> propertyTransactionLogDir = new FileProperty("igindex.transaction.log.dir");
 
-	private volatile IgStreamingServiceMonitor monitor;
+	private volatile IgIndexStreamingServiceMonitor monitor;
 
 	@Override
 	protected void startupComponent() throws Exception {
@@ -48,19 +48,19 @@ public class IgIndexComponent extends AbstractIdleComponent {
 		String apiKey = propertyApiKey.get();
 		String username = propertyUsername.get();
 		String password = propertyPassword.get();
-		IgEnvironment environment = propertyEnvironment.get();
+		IgIndexEnvironment environment = propertyEnvironment.get();
 		File transactionLogDir = propertyTransactionLogDir.get();
 
-		IgCredentials credentials = new IgCredentials(apiKey, username, password);
+		IgIndexCredentials credentials = new IgIndexCredentials(apiKey, username, password);
 
 		log.info("Creating Session", environment);
 		log.info("Environment: {}", environment);
 		log.info("User: {}", credentials.getUsername());
-		IgSession session = new IgSession(credentials, environment);
-		setDependency(IIgSession.class, session);
+		IIgIndexSession session = new IgIndexSession(credentials, environment);
+		setDependency(IIgIndexSession.class, session);
 
 		log.info("Creating Account Manager");
-		IgSessionManager sessionManager = new IgSessionManager(session);
+		IgIndexSessionManager sessionManager = new IgIndexSessionManager(session);
 		registry.register(sessionManager);
 
 		log.info("Creating Transaction Log");
@@ -68,28 +68,28 @@ public class IgIndexComponent extends AbstractIdleComponent {
 		transactionLog.start();
 
 		log.info("Creating REST Service");
-		IgRestService rest = new IgRestService(session, transactionLog);
-		setDependency(IIgRestService.class, rest);
+		IgIndexRestService rest = new IgIndexRestService(session, transactionLog);
+		setDependency(IIgIndexRestService.class, rest);
 		setDependency(IMarketNavigationCache.class, rest.getMarketNavigationCache());
 
 		log.info("Creating Trading Platform");
-		IgTradingPlatform platform = new IgTradingPlatform(rest);
-		setDependency(IIgTradingPlatform.class, platform);
+		IgIndexTradingPlatform platform = new IgIndexTradingPlatform(rest);
+		setDependency(IIgIndexTradingPlatform.class, platform);
 
 		log.info("Creating Connection manager");
-		IConnectionManager connectionManager = new ConnectionManager(rest, platform);
+		IIgIndexConnectionManager connectionManager = new IgIndexConnectionManager(rest, platform);
 		registry.register(connectionManager);
-		setDependency(IConnectionManager.class, connectionManager);
+		setDependency(IIgIndexConnectionManager.class, connectionManager);
 
 		log.info("Logging in ...");
 		connectionManager.login();
 
 		log.info("Creating Streaming Service Monitor");
-		monitor = new IgStreamingServiceMonitor(platform);
+		monitor = new IgIndexStreamingServiceMonitor(platform);
 		monitor.start();
 	}
 
-	public IgStreamingServiceMonitor getMonitor() {
+	public IgIndexStreamingServiceMonitor getMonitor() {
 		return monitor;
 	}
 

@@ -9,7 +9,7 @@ import com.robindrew.trading.igindex.platform.rest.executor.getmarkets.response.
 import com.robindrew.trading.igindex.platform.rest.executor.getpositions.MarketPosition;
 import com.robindrew.trading.igindex.platform.rest.executor.login.LoginResponse;
 
-public interface ConnectionManagerMBean {
+public interface IgIndexConnectionManagerMBean {
 
 	boolean isLoggedIn();
 

@@ -6,6 +6,7 @@ import com.robindrew.common.service.component.logging.LoggingComponent;
 import com.robindrew.common.service.component.properties.PropertiesComponent;
 import com.robindrew.common.service.component.stats.StatsComponent;
 import com.robindrew.trading.multifeed.jetty.JettyComponent;
+import com.robindrew.trading.multifeed.provider.cityindex.CityIndexComponent;
 import com.robindrew.trading.multifeed.provider.fxcm.FxcmComponent;
 import com.robindrew.trading.multifeed.provider.igindex.IgIndexComponent;
 import com.robindrew.trading.multifeed.provider.oanda.OandaComponent;
@@ -31,6 +32,7 @@ public class MultiFeedService extends AbstractService {
 	private final IgIndexComponent igindex = new IgIndexComponent();
 	private final OandaComponent oanda = new OandaComponent();
 	private final FxcmComponent fxcm = new FxcmComponent();
+	private final CityIndexComponent cityindex = new CityIndexComponent();
 
 	public MultiFeedService(String[] args) {
 		super(args);
@@ -46,6 +48,7 @@ public class MultiFeedService extends AbstractService {
 		start(igindex);
 		start(oanda);
 		start(fxcm);
+		start(cityindex);
 		start(subscriber);
 	}
 

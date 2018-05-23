@@ -1,6 +1,6 @@
 package com.robindrew.trading.multifeed.provider.igindex.session;
 
-public interface IgSessionManagerMBean {
+public interface IgIndexSessionManagerMBean {
 
 	String getEnvironment();
 

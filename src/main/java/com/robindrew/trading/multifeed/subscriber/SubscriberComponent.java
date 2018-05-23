@@ -14,6 +14,8 @@ import static com.robindrew.trading.Instruments.USD_JPY;
 import static com.robindrew.trading.Instruments.US_CRUDE_OIL;
 import static com.robindrew.trading.Instruments.XAG_USD;
 import static com.robindrew.trading.Instruments.XAU_USD;
+import static com.robindrew.trading.cityindex.InstrumentCategory.DFT;
+import static com.robindrew.trading.provider.TradingProvider.CITYINDEX;
 import static com.robindrew.trading.provider.TradingProvider.FXCM;
 import static com.robindrew.trading.provider.TradingProvider.IGINDEX;
 import static com.robindrew.trading.provider.TradingProvider.OANDA;
@@ -23,23 +25,28 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.robindrew.common.properties.map.type.IProperty;
 import com.robindrew.common.properties.map.type.StringProperty;
 import com.robindrew.common.service.component.AbstractIdleComponent;
 import com.robindrew.trading.IInstrument;
 import com.robindrew.trading.IInstrumentRegistry;
 import com.robindrew.trading.InstrumentRegistry;
+import com.robindrew.trading.cityindex.CityIndexInstrument;
+import com.robindrew.trading.cityindex.ICityIndexInstrument;
+import com.robindrew.trading.cityindex.platform.ICityIndexTradingPlatform;
 import com.robindrew.trading.fxcm.FxcmInstrument;
 import com.robindrew.trading.fxcm.IFxcmInstrument;
 import com.robindrew.trading.fxcm.platform.IFxcmTradingPlatform;
-import com.robindrew.trading.igindex.IIgInstrument;
-import com.robindrew.trading.igindex.IgInstrument;
-import com.robindrew.trading.igindex.platform.IIgTradingPlatform;
+import com.robindrew.trading.igindex.IIgIndexInstrument;
+import com.robindrew.trading.igindex.IgIndexInstrument;
+import com.robindrew.trading.igindex.platform.IIgIndexTradingPlatform;
 import com.robindrew.trading.oanda.IOandaInstrument;
 import com.robindrew.trading.oanda.OandaInstrument;
 import com.robindrew.trading.oanda.platform.IOandaTradingPlatform;
 import com.robindrew.trading.platform.streaming.IInstrumentPriceStream;
 import com.robindrew.trading.platform.streaming.IStreamingService;
+import com.robindrew.trading.platform.streaming.InstrumentPriceStream;
 import com.robindrew.trading.price.candle.io.stream.sink.PriceCandleFileSink;
 
 public class SubscriberComponent extends AbstractIdleComponent {
@@ -49,6 +56,7 @@ public class SubscriberComponent extends AbstractIdleComponent {
 	private static final IProperty<String> propertyFxcmTickOutputDir = new StringProperty("fxcm.tick.output.dir");
 	private static final IProperty<String> propertyOandaTickOutputDir = new StringProperty("oanda.tick.output.dir");
 	private static final IProperty<String> propertyIgIndexTickOutputDir = new StringProperty("igindex.tick.output.dir");
+	private static final IProperty<String> propertyCityIndexTickOutputDir = new StringProperty("cityindex.tick.output.dir");
 
 	@Override
 	protected void startupComponent() throws Exception {
@@ -56,9 +64,10 @@ public class SubscriberComponent extends AbstractIdleComponent {
 		// Initialise instrument registry
 		log.info("Registering Instruments");
 		InstrumentRegistry registry = new InstrumentRegistry();
-		registry.register(IgInstrument.class);
+		registry.register(IgIndexInstrument.class);
 		registry.register(OandaInstrument.class);
 		registry.register(FxcmInstrument.class);
+		registry.register(CityIndexInstrument.class);
 		setDependency(IInstrumentRegistry.class, registry);
 
 		// Initialise manager
@@ -86,12 +95,24 @@ public class SubscriberComponent extends AbstractIdleComponent {
 		// Initialise subscriptions
 		createFxcmSubscriptions(manager);
 		createOandaSubscriptions(manager);
-		createIgSubscriptions(manager);
+		createIgIndexSubscriptions(manager);
+		createCityIndexSubscriptions(manager);
 	}
 
 	@Override
 	protected void shutdownComponent() throws Exception {
 		// TODO: Cancel all subscriptions here
+	}
+
+	private void createCityIndexSubscriptions(SubscriberManager manager) {
+		for (IInstrument instrument : manager.getInstruments()) {
+			try {
+				IInstrumentPriceStream<ICityIndexInstrument> stream = createCityIndexSubscription(instrument);
+				manager.getSubscriberMap(instrument).register(CITYINDEX, stream);
+			} catch (Exception e) {
+				log.warn("Unable to subscribe instrument: " + instrument, e);
+			}
+		}
 	}
 
 	private void createOandaSubscriptions(SubscriberManager manager) {
@@ -105,10 +126,10 @@ public class SubscriberComponent extends AbstractIdleComponent {
 		}
 	}
 
-	private void createIgSubscriptions(SubscriberManager manager) {
+	private void createIgIndexSubscriptions(SubscriberManager manager) {
 		for (IInstrument instrument : manager.getInstruments()) {
 			try {
-				IInstrumentPriceStream<IIgInstrument> stream = createIgSubscription(instrument);
+				IInstrumentPriceStream<IIgIndexInstrument> stream = createIgIndexSubscription(instrument);
 				manager.getSubscriberMap(instrument).register(IGINDEX, stream);
 			} catch (Exception e) {
 				log.warn("Unable to subscribe instrument: " + instrument, e);
@@ -129,8 +150,12 @@ public class SubscriberComponent extends AbstractIdleComponent {
 
 	private IInstrumentPriceStream<IFxcmInstrument> createFxcmSubscription(IInstrument genericInstrument) {
 		IInstrumentRegistry registry = getDependency(IInstrumentRegistry.class);
-		IFxcmInstrument instrument = registry.get(genericInstrument, IFxcmInstrument.class);
-
+		Optional<IFxcmInstrument> optional = registry.get(genericInstrument, IFxcmInstrument.class);
+		if (!optional.isPresent()) {
+			FxcmInstrument instrument = new FxcmInstrument(genericInstrument.getName(), genericInstrument, 5);
+			return new InstrumentPriceStream<IFxcmInstrument>(instrument);
+		}
+		IFxcmInstrument instrument = optional.get();
 		IFxcmTradingPlatform platform = getDependency(IFxcmTradingPlatform.class);
 
 		// Register the stream to make it available through the platform
@@ -148,8 +173,12 @@ public class SubscriberComponent extends AbstractIdleComponent {
 
 	private IInstrumentPriceStream<IOandaInstrument> createOandaSubscription(IInstrument genericInstrument) {
 		IInstrumentRegistry registry = getDependency(IInstrumentRegistry.class);
-		IOandaInstrument instrument = registry.get(genericInstrument, IOandaInstrument.class);
-
+		Optional<IOandaInstrument> optional = registry.get(genericInstrument, IOandaInstrument.class);
+		if (!optional.isPresent()) {
+			OandaInstrument instrument = new OandaInstrument(genericInstrument.getName(), genericInstrument);
+			return new InstrumentPriceStream<IOandaInstrument>(instrument);
+		}
+		IOandaInstrument instrument = optional.get();
 		IOandaTradingPlatform platform = getDependency(IOandaTradingPlatform.class);
 
 		// Register the stream to make it available through the platform
@@ -165,19 +194,46 @@ public class SubscriberComponent extends AbstractIdleComponent {
 		return priceStream;
 	}
 
-	private IInstrumentPriceStream<IIgInstrument> createIgSubscription(IInstrument genericInstrument) {
+	private IInstrumentPriceStream<IIgIndexInstrument> createIgIndexSubscription(IInstrument genericInstrument) {
 		IInstrumentRegistry registry = getDependency(IInstrumentRegistry.class);
-		IIgInstrument instrument = registry.get(genericInstrument, IIgInstrument.class);
-
-		IIgTradingPlatform platform = getDependency(IIgTradingPlatform.class);
+		Optional<IIgIndexInstrument> optional = registry.get(genericInstrument, IIgIndexInstrument.class);
+		if (!optional.isPresent()) {
+			IgIndexInstrument instrument = new IgIndexInstrument(genericInstrument.getName(), genericInstrument);
+			return new InstrumentPriceStream<IIgIndexInstrument>(instrument);
+		}
+		IIgIndexInstrument instrument = optional.get();
+		IIgIndexTradingPlatform platform = getDependency(IIgIndexTradingPlatform.class);
 
 		// Register the stream to make it available through the platform
-		IStreamingService<IIgInstrument> streaming = platform.getStreamingService();
+		IStreamingService<IIgIndexInstrument> streaming = platform.getStreamingService();
 		streaming.subscribe(instrument);
-		IInstrumentPriceStream<IIgInstrument> priceStream = streaming.getPriceStream(instrument);
+		IInstrumentPriceStream<IIgIndexInstrument> priceStream = streaming.getPriceStream(instrument);
 
 		// Create the output file
 		PriceCandleFileSink priceFileSink = new PriceCandleFileSink(instrument, new File(propertyIgIndexTickOutputDir.get()));
+		priceFileSink.start();
+		priceStream.register(priceFileSink);
+
+		return priceStream;
+	}
+
+	private IInstrumentPriceStream<ICityIndexInstrument> createCityIndexSubscription(IInstrument genericInstrument) {
+		IInstrumentRegistry registry = getDependency(IInstrumentRegistry.class);
+		Optional<ICityIndexInstrument> optional = registry.get(genericInstrument, ICityIndexInstrument.class);
+		if (!optional.isPresent()) {
+			CityIndexInstrument instrument = new CityIndexInstrument(genericInstrument.hashCode(), DFT, genericInstrument);
+			return new InstrumentPriceStream<ICityIndexInstrument>(instrument);
+		}
+		ICityIndexInstrument instrument = optional.get();
+		ICityIndexTradingPlatform platform = getDependency(ICityIndexTradingPlatform.class);
+
+		// Register the stream to make it available through the platform
+		IStreamingService<ICityIndexInstrument> streaming = platform.getStreamingService();
+		streaming.subscribe(instrument);
+		IInstrumentPriceStream<ICityIndexInstrument> priceStream = streaming.getPriceStream(instrument);
+
+		// Create the output file
+		PriceCandleFileSink priceFileSink = new PriceCandleFileSink(instrument, new File(propertyCityIndexTickOutputDir.get()));
 		priceFileSink.start();
 		priceStream.register(priceFileSink);
 
