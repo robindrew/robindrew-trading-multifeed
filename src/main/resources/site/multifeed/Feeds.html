@@ -63,7 +63,7 @@ body { padding-top: 10px; }
 <td>${instrument.type}</td>
 <td>${instrument.name}</td>
 #foreach($price in $instrument.prices)
-<td id="${price.id}_CloseColor" class="warning CloseColor"><span id="${price.id}_CloseIcon" class="glyphicon glyphicon-minus CloseIcon" aria-hidden="true"></span>&nbsp;&nbsp;<span id="${price.id}_ClosePrice">-</span></td>
+<td id="${price.id}_CloseColor" class="warning CloseColor" style="width:120px;"><span id="${price.id}_CloseIcon" class="glyphicon glyphicon-minus CloseIcon" aria-hidden="true"></span>&nbsp;&nbsp;<span id="${price.id}_ClosePrice">-</span></td>
 #end
 </tr>
 #end

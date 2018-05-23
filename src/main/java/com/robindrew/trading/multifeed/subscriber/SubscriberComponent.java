@@ -221,7 +221,7 @@ public class SubscriberComponent extends AbstractIdleComponent {
 		IInstrumentRegistry registry = getDependency(IInstrumentRegistry.class);
 		Optional<ICityIndexInstrument> optional = registry.get(genericInstrument, ICityIndexInstrument.class);
 		if (!optional.isPresent()) {
-			CityIndexInstrument instrument = new CityIndexInstrument(genericInstrument.hashCode(), DFT, genericInstrument);
+			CityIndexInstrument instrument = new CityIndexInstrument(genericInstrument.hashCode(), DFT, genericInstrument, 1);
 			return new InstrumentPriceStream<ICityIndexInstrument>(instrument);
 		}
 		ICityIndexInstrument instrument = optional.get();
