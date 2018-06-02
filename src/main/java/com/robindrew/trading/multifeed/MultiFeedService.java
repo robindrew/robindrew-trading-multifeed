@@ -44,12 +44,12 @@ public class MultiFeedService extends AbstractService {
 		start(logging);
 		start(heartbeat);
 		start(stats);
-		start(jetty);
 		start(igindex);
 		start(oanda);
 		start(fxcm);
 		start(cityindex);
 		start(subscriber);
+		start(jetty);
 	}
 
 	@Override
