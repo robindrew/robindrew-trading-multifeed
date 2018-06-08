@@ -23,7 +23,7 @@ import com.robindrew.trading.cityindex.platform.ICityIndexTradingPlatform;
 import com.robindrew.trading.cityindex.platform.rest.CityIndexRestService;
 import com.robindrew.trading.cityindex.platform.rest.ICityIndexRestService;
 import com.robindrew.trading.cityindex.platform.streaming.CityIndexStreamingServiceMonitor;
-import com.robindrew.trading.log.TransactionLog;
+import com.robindrew.trading.log.FileBackedTransactionLog;
 import com.robindrew.trading.multifeed.provider.cityindex.connection.CityIndexConnectionManager;
 import com.robindrew.trading.multifeed.provider.cityindex.connection.ICityIndexConnectionManager;
 import com.robindrew.trading.multifeed.provider.cityindex.session.CityIndexSessionManager;
@@ -63,8 +63,8 @@ public class CityIndexComponent extends AbstractIdleComponent {
 		registry.register(sessionManager);
 
 		log.info("Creating Transaction Log");
-		TransactionLog transactionLog = new TransactionLog(transactionLogDir);
-		transactionLog.start();
+		FileBackedTransactionLog transactionLog = new FileBackedTransactionLog(transactionLogDir);
+		transactionLog.start("CityIndexTransactionLog");
 
 		log.info("Creating REST Service");
 		CityIndexRestService rest = new CityIndexRestService(session, transactionLog);

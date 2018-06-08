@@ -15,7 +15,7 @@ import com.robindrew.common.properties.map.type.IProperty;
 import com.robindrew.common.properties.map.type.StringProperty;
 import com.robindrew.common.service.component.AbstractIdleComponent;
 import com.robindrew.trading.igindex.platform.streaming.IgIndexStreamingServiceMonitor;
-import com.robindrew.trading.log.TransactionLog;
+import com.robindrew.trading.log.FileBackedTransactionLog;
 import com.robindrew.trading.multifeed.provider.oanda.session.OandaSessionManager;
 import com.robindrew.trading.oanda.platform.IOandaSession;
 import com.robindrew.trading.oanda.platform.IOandaTradingPlatform;
@@ -57,8 +57,8 @@ public class OandaComponent extends AbstractIdleComponent {
 		registry.register(sessionManager);
 
 		log.info("Creating Transaction Log");
-		TransactionLog transactionLog = new TransactionLog(transactionLogDir);
-		transactionLog.start();
+		FileBackedTransactionLog transactionLog = new FileBackedTransactionLog(transactionLogDir);
+		transactionLog.start("OandaTransactionLog");
 
 		log.info("Creating Trading Platform");
 		OandaTradingPlatform platform = new OandaTradingPlatform(session);
