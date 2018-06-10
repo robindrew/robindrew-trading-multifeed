@@ -24,7 +24,7 @@ import com.robindrew.trading.fxcm.platform.api.java.FxcmJavaService;
 import com.robindrew.trading.fxcm.platform.api.java.gateway.FxcmGateway;
 import com.robindrew.trading.fxcm.platform.api.java.streaming.IFxcmStreamingService;
 import com.robindrew.trading.igindex.platform.streaming.IgIndexStreamingServiceMonitor;
-import com.robindrew.trading.log.TransactionLog;
+import com.robindrew.trading.log.FileBackedTransactionLog;
 import com.robindrew.trading.multifeed.provider.fxcm.session.FxcmSessionManager;
 
 public class FxcmComponent extends AbstractIdleComponent {
@@ -60,8 +60,8 @@ public class FxcmComponent extends AbstractIdleComponent {
 		registry.register(sessionManager);
 
 		log.info("Creating Transaction Log");
-		TransactionLog transactionLog = new TransactionLog(transactionLogDir);
-		transactionLog.start();
+		FileBackedTransactionLog transactionLog = new FileBackedTransactionLog(transactionLogDir);
+		transactionLog.start("FxcmTransactionLog");
 
 		log.info("Creating Gateway");
 		FxcmGateway gateway = new FxcmGateway(transactionLog);
