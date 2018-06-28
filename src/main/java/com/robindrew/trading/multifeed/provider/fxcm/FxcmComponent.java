@@ -23,7 +23,6 @@ import com.robindrew.trading.fxcm.platform.IFxcmTradingPlatform;
 import com.robindrew.trading.fxcm.platform.api.java.FxcmJavaService;
 import com.robindrew.trading.fxcm.platform.api.java.gateway.FxcmGateway;
 import com.robindrew.trading.fxcm.platform.api.java.streaming.IFxcmStreamingService;
-import com.robindrew.trading.igindex.platform.streaming.IgIndexStreamingServiceMonitor;
 import com.robindrew.trading.log.FileBackedTransactionLog;
 import com.robindrew.trading.multifeed.provider.fxcm.session.FxcmSessionManager;
 
@@ -35,8 +34,6 @@ public class FxcmComponent extends AbstractIdleComponent {
 	private static final IProperty<String> propertyPassword = new StringProperty("fxcm.password");
 	private static final IProperty<FxcmEnvironment> propertyEnvironment = new EnumProperty<>(FxcmEnvironment.class, "oanda.environment");
 	private static final IProperty<File> propertyTransactionLogDir = new FileProperty("fxcm.transaction.log.dir");
-
-	private volatile IgIndexStreamingServiceMonitor monitor;
 
 	@Override
 	protected void startupComponent() throws Exception {
@@ -75,10 +72,6 @@ public class FxcmComponent extends AbstractIdleComponent {
 		log.info("Register Streaming Service");
 		IFxcmStreamingService streaming = platform.getStreamingService();
 		gateway.setTickHandler(streaming);
-	}
-
-	public IgIndexStreamingServiceMonitor getMonitor() {
-		return monitor;
 	}
 
 	@Override
