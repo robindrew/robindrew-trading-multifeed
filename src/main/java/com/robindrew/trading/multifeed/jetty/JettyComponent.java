@@ -15,6 +15,7 @@ import com.robindrew.common.service.component.jetty.handler.page.SystemPage;
 import com.robindrew.common.template.ITemplateLocator;
 import com.robindrew.common.template.velocity.VelocityTemplateLocatorSupplier;
 import com.robindrew.trading.multifeed.jetty.page.FeedsPage;
+import com.robindrew.trading.multifeed.jetty.page.PriceStreamExecutor;
 import com.robindrew.trading.multifeed.jetty.page.PricesPage;
 
 public class JettyComponent extends JettyVelocityComponent {
@@ -38,8 +39,9 @@ public class JettyComponent extends JettyVelocityComponent {
 		// Register extra pages
 		handler.uri("/Feeds", new FeedsPage(getContext(), "site/multifeed/Feeds.html"));
 		handler.uri("/Prices", new PricesPage(getContext(), "site/multifeed/Prices.json"));
+		handler.uri("/PriceStream", new PriceStreamExecutor());
 	}
-	
+
 	private IHttpExecutor newIndexPage(IVelocityHttpContext context, String templateName) {
 		IndexPage page = new IndexPage(context, templateName);
 		page.addLink("Feeds", "/Feeds", Bootstrap.COLOR_DEFAULT);
