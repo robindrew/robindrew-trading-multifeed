@@ -7,5 +7,13 @@
          <hash>35b73b89777ac836dacf7e459ebb007b</hash>
          <version>3.0.1</version>
       </releaseVersion>
+      <releaseVersion>
+         <hash>f5ee22b1a06398f92d3ef4b3ab0a146e</hash>
+         <version>3.0.2</version>
+      </releaseVersion>
+      <releaseVersion>
+         <hash>1c2b63b2bc9b815783c79c31d02245cd</hash>
+         <version>3.0.3</version>
+      </releaseVersion>
    </releaseVersions>
 </release>

@@ -1,0 +1,19 @@
+rootProject.name = 'robindrew-trading-multifeed'
+
+include 'robindrew-common'
+project(":robindrew-common").projectDir = file('/../robindrew-common')
+
+include 'robindrew-trading'
+project(":robindrew-trading").projectDir = file('/../robindrew-trading')
+
+include 'robindrew-trading-cityindex'
+project(":robindrew-trading-cityindex").projectDir = file('/../robindrew-trading-cityindex')
+
+include 'robindrew-trading-fxcm'
+project(":robindrew-trading-fxcm").projectDir = file('/../robindrew-trading-fxcm')
+
+include 'robindrew-trading-igindex'
+project(":robindrew-trading-igindex").projectDir = file('/../robindrew-trading-igindex')
+
+include 'robindrew-trading-oanda'
+project(":robindrew-trading-oanda").projectDir = file('/../robindrew-trading-oanda')
