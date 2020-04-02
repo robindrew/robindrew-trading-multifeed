@@ -15,8 +15,8 @@ import com.robindrew.trading.multifeed.subscriber.ISubscriberManager;
 import com.robindrew.trading.multifeed.subscriber.ISubscriberMap;
 import com.robindrew.trading.platform.streaming.IInstrumentPriceStream;
 import com.robindrew.trading.price.candle.IPriceCandle;
-import com.robindrew.trading.price.candle.ITickPriceCandle;
 import com.robindrew.trading.price.candle.io.stream.sink.IPriceCandleStreamSink;
+import com.robindrew.trading.price.candle.tick.ITickPriceCandle;
 import com.robindrew.trading.provider.ITradingProvider;
 
 public class PriceStream implements AutoCloseable {
