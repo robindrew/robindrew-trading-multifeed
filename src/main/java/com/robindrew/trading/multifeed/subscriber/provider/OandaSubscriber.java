@@ -37,7 +37,7 @@ public class OandaSubscriber extends TradingProviderSubscriber<IOandaInstrument>
 
 		// Register the stream to make it available through the platform
 		IStreamingService<IOandaInstrument> streaming = platform.getStreamingService();
-		streaming.subscribe(instrument);
+		streaming.subscribeToPrices(instrument);
 		IInstrumentPriceStream<IOandaInstrument> priceStream = streaming.getPriceStream(instrument);
 
 		// Create the output file

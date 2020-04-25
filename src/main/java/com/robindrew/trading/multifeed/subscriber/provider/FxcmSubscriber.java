@@ -37,7 +37,7 @@ public class FxcmSubscriber extends TradingProviderSubscriber<IFxcmInstrument> {
 
 		// Register the stream to make it available through the platform
 		IStreamingService<IFxcmInstrument> streaming = platform.getStreamingService();
-		streaming.subscribe(instrument);
+		streaming.subscribeToPrices(instrument);
 		IInstrumentPriceStream<IFxcmInstrument> priceStream = streaming.getPriceStream(instrument);
 
 		// Create the output file

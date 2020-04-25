@@ -38,7 +38,7 @@ public class CityIndexSubscriber extends TradingProviderSubscriber<ICityIndexIns
 
 		// Register the stream to make it available through the platform
 		IStreamingService<ICityIndexInstrument> streaming = platform.getStreamingService();
-		streaming.subscribe(instrument);
+		streaming.subscribeToPrices(instrument);
 		IInstrumentPriceStream<ICityIndexInstrument> priceStream = streaming.getPriceStream(instrument);
 
 		// Create the output file
